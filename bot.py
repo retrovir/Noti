@@ -20,16 +20,25 @@ def escape_markdown_v2(text: str) -> str:
 
 def escape_telegram_message(text: str) -> str:
     """
-    Escapes all special characters for MarkdownV2 except those inside code blocks (``````).
+    Escapes all special characters for MarkdownV2 except those inside code blocks (```txt ... ```).
     Splits text by code blocks and escapes only outside the code blocks.
     """
-    parts = text.split('```')
-    for i in range(len(parts)):
-        # Escape every non-code block part (even indexes)
-        if i % 2 == 0:
-            parts[i] = escape_markdown_v2(parts[i])
-        # Leave code block parts (odd indexes) untouched
-    return '```'.join(parts)
+    # Use a unique code block delimiter for Telegram (```txt)
+    result = []
+    parts = text.split("```txt")
+    for i, part in enumerate(parts):
+        if i == 0:
+            # Before the first code block: escape
+            result.append(escape_markdown_v2(part))
+        else:
+            # Everything after a code block opening: split by closing ```
+            end_split = part.split("```", 1)
+            # end_split[0] is inside code block (do not escape), end_split[1] (if exists) is outside (escape)
+            result.append("```txt" + end_split[0] + "```")
+            if len(end_split) > 1:
+                result.append(escape_markdown_v2(end_split[1]))
+    # Remove empty strings that may be produced by split/join
+    return "".join(filter(None, result))
 
 async def send_long_telegram_message(bot, chat_id, text):
     max_length = 4096
@@ -109,7 +118,7 @@ async def find_and_notify_pokemon():
     telegram_output = []
     telegram_output.append(f"*Found {len(qualifying_pokemon)} single-type Pokémon with speed <= 70:*")
     if qualifying_pokemon:
-        telegram_output.append("```")
+        telegram_output.append("```txt")
         for p in qualifying_pokemon:
             line = f"{p['name']:<15} | {p['type']:<10} | Speed: {p['speed']}"
             telegram_output.append(line)
@@ -137,4 +146,3 @@ async def find_and_notify_pokemon():
 
 if __name__ == "__main__":
     asyncio.run(find_and_notify_pokemon())
-        
