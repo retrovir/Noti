@@ -11,39 +11,10 @@ CHAT_ID = "6967887832"
 
 BASE_URL = "https://pokeapi.co/api/v2/"
 
-def escape_markdown_v2(text: str) -> str:
-    # Escape characters as required by Telegram MarkdownV2 except inside code blocks
-    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
-    for char in special_chars:
-        text = text.replace(char, f'\\{char}')
-    return text
-
-def escape_telegram_message(text: str) -> str:
-    """
-    Escapes all special characters for MarkdownV2 except those inside code blocks (```txt ... ```).
-    Splits text by code blocks and escapes only outside the code blocks.
-    """
-    # Use a unique code block delimiter for Telegram (```txt)
-    result = []
-    parts = text.split("```txt")
-    for i, part in enumerate(parts):
-        if i == 0:
-            # Before the first code block: escape
-            result.append(escape_markdown_v2(part))
-        else:
-            # Everything after a code block opening: split by closing ```
-            end_split = part.split("```", 1)
-            # end_split[0] is inside code block (do not escape), end_split[1] (if exists) is outside (escape)
-            result.append("```txt" + end_split[0] + "```")
-            if len(end_split) > 1:
-                result.append(escape_markdown_v2(end_split[1]))
-    # Remove empty strings that may be produced by split/join
-    return "".join(filter(None, result))
-
 async def send_long_telegram_message(bot, chat_id, text):
     max_length = 4096
     if len(text) <= max_length:
-        await bot.send_message(chat_id=chat_id, text=text, parse_mode='MarkdownV2')
+        await bot.send_message(chat_id=chat_id, text=text)
         return
 
     parts = []
@@ -62,7 +33,7 @@ async def send_long_telegram_message(bot, chat_id, text):
             break
 
     for part in parts:
-        await bot.send_message(chat_id=chat_id, text=part, parse_mode='MarkdownV2')
+        await bot.send_message(chat_id=chat_id, text=part)
 
 async def find_and_notify_pokemon():
     print("Connecting to the PokéAPI to get the full list of Pokémon...")
@@ -114,21 +85,19 @@ async def find_and_notify_pokemon():
     console_output.append("="*60)
     print("\n".join(console_output))
 
-    # Telegram output (with code block for monospaced alignment)
+    # Telegram output (PLAIN TEXT, NO MARKDOWN, NO CODE BLOCKS)
     telegram_output = []
-    telegram_output.append(f"*Found {len(qualifying_pokemon)} single-type Pokémon with speed <= 70:*")
+    telegram_output.append(f"Found {len(qualifying_pokemon)} single-type Pokémon with speed <= 70:")
+    telegram_output.append("="*60)
     if qualifying_pokemon:
-        telegram_output.append("```txt")
         for p in qualifying_pokemon:
-            line = f"{p['name']:<15} | {p['type']:<10} | Speed: {p['speed']}"
+            line = f"- {p['name']:<15} (Type: {p['type']:<10} | Speed: {p['speed']})"
             telegram_output.append(line)
-        telegram_output.append("```")
     else:
         telegram_output.append("No Pokémon found that match the criteria.")
+    telegram_output.append("="*60)
 
     final_message = "\n".join(telegram_output)
-    # Escape message except inside code blocks
-    final_message = escape_telegram_message(final_message)
 
     if BOT_TOKEN == "YOUR_BOT_TOKEN" or CHAT_ID == "YOUR_CHAT_ID":
         print("\nTelegram credentials are not set. Skipping notification.")
