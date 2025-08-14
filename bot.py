@@ -23,7 +23,7 @@ def escape_telegram_message(text: str) -> str:
     Escapes all special characters for MarkdownV2 except those inside code blocks (``````).
     Splits text by code blocks and escapes only outside the code blocks.
     """
-    parts = text.split('```
+    parts = text.split('```')
     for i in range(len(parts)):
         # Escape every non-code block part (even indexes)
         if i % 2 == 0:
@@ -137,4 +137,4 @@ async def find_and_notify_pokemon():
 
 if __name__ == "__main__":
     asyncio.run(find_and_notify_pokemon())
-            
+        
