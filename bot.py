@@ -56,9 +56,10 @@ async def find_and_notify_pokemon():
         try:
             data = requests.get(pokemon_info['url']).json()
 
+            # Changed condition: speed >= 70
             if len(data['types']) == 1:
                 speed = next((s['base_stat'] for s in data['stats'] if s['stat']['name'] == 'speed'), None)
-                if speed is not None and speed <= 70:
+                if speed is not None and speed >= 70:   # <-- Changed here
                     qualifying_pokemon.append({
                         "name": data['name'].capitalize(),
                         "type": data['types'][0]['type']['name'].capitalize(),
@@ -71,7 +72,7 @@ async def find_and_notify_pokemon():
 
     # Console output
     console_output = []
-    header_line_console = f"Found {len(qualifying_pokemon)} single-type Pokémon with speed <= 70:"
+    header_line_console = f"Found {len(qualifying_pokemon)} single-type Pokémon with speed >= 70:"
     console_output.append("\n" + "="*60)
     console_output.append(header_line_console)
 
@@ -85,9 +86,9 @@ async def find_and_notify_pokemon():
     console_output.append("="*60)
     print("\n".join(console_output))
 
-    # Telegram output (PLAIN TEXT, NO MARKDOWN, NO CODE BLOCKS)
+    # Telegram output
     telegram_output = []
-    telegram_output.append(f"Found {len(qualifying_pokemon)} single-type Pokémon with speed <= 70:")
+    telegram_output.append(f"Found {len(qualifying_pokemon)} single-type Pokémon with speed >= 70:")
     telegram_output.append("="*60)
     if qualifying_pokemon:
         for p in qualifying_pokemon:
@@ -115,3 +116,4 @@ async def find_and_notify_pokemon():
 
 if __name__ == "__main__":
     asyncio.run(find_and_notify_pokemon())
+                
