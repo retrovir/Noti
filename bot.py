@@ -109,7 +109,7 @@ async def find_and_notify_pokemon():
     telegram_output = []
     telegram_output.append(f"*Found {len(qualifying_pokemon)} single-type Pokémon with speed <= 70:*")
     if qualifying_pokemon:
-        telegram_output.append("```
+        telegram_output.append("```")
         for p in qualifying_pokemon:
             line = f"{p['name']:<15} | {p['type']:<10} | Speed: {p['speed']}"
             telegram_output.append(line)
