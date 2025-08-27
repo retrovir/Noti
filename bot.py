@@ -9,6 +9,9 @@ BOT_TOKEN = "8418721690:AAFB4pj29xxsAfgMGa32cI20GsRFi0mnCeM"
 CHAT_ID = "6967887832"
 # ---------------------------------------------------------
 
+# ✅ Speed limit configuration
+MAX_SPEED = 110
+
 BASE_URL = "https://pokeapi.co/api/v2/"
 
 async def send_long_telegram_message(bot, chat_id, text):
@@ -60,8 +63,8 @@ async def find_and_notify_pokemon():
             stats = {s['stat']['name']: s['base_stat'] for s in data['stats']}
             speed = stats.get("speed")
 
-            # ✅ Condition: Speed ≤ 99
-            if speed is not None and speed <= 99:
+            # ✅ Condition: Speed ≤ MAX_SPEED
+            if speed is not None and speed <= MAX_SPEED:
                 qualifying_pokemon.append({
                     "name": data['name'].capitalize(),
                     "types": [t['type']['name'].capitalize() for t in data['types']],
@@ -74,7 +77,7 @@ async def find_and_notify_pokemon():
 
     # Console output
     console_output = []
-    header_line_console = f"Found {len(qualifying_pokemon)} Pokémon (any type) with Speed <= 99:"
+    header_line_console = f"Found {len(qualifying_pokemon)} Pokémon (any type) with Speed <= {MAX_SPEED}:"
     console_output.append("\n" + "="*60)
     console_output.append(header_line_console)
 
@@ -91,7 +94,7 @@ async def find_and_notify_pokemon():
 
     # Telegram output
     telegram_output = []
-    telegram_output.append(f"Found {len(qualifying_pokemon)} Pokémon (any type) with Speed <= 99:")
+    telegram_output.append(f"Found {len(qualifying_pokemon)} Pokémon (any type) with Speed <= {MAX_SPEED}:")
     telegram_output.append("="*60)
     if qualifying_pokemon:
         for p in qualifying_pokemon:
