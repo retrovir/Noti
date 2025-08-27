@@ -59,20 +59,14 @@ async def find_and_notify_pokemon():
             # Get stats
             stats = {s['stat']['name']: s['base_stat'] for s in data['stats']}
             speed = stats.get("speed")
-            spa = stats.get("special-attack")
 
-            # ✅ Conditions:
-            # - Speed <= 130
-            # - Special Attack is the highest stat
-            if speed is not None and speed <= 130:
-                highest_stat_name = max(stats, key=stats.get)
-                if highest_stat_name == "special-attack":
-                    qualifying_pokemon.append({
-                        "name": data['name'].capitalize(),
-                        "types": [t['type']['name'].capitalize() for t in data['types']],  # multiple types allowed
-                        "speed": speed,
-                        "special_attack": spa
-                    })
+            # ✅ Condition: Speed ≤ 99
+            if speed is not None and speed <= 99:
+                qualifying_pokemon.append({
+                    "name": data['name'].capitalize(),
+                    "types": [t['type']['name'].capitalize() for t in data['types']],
+                    "speed": speed
+                })
         except requests.exceptions.RequestException:
             continue
 
@@ -80,14 +74,14 @@ async def find_and_notify_pokemon():
 
     # Console output
     console_output = []
-    header_line_console = f"Found {len(qualifying_pokemon)} Pokémon (any type count) with Special Attack as highest stat and Speed <= 130:"
+    header_line_console = f"Found {len(qualifying_pokemon)} Pokémon (any type) with Speed <= 99:"
     console_output.append("\n" + "="*60)
     console_output.append(header_line_console)
 
     if qualifying_pokemon:
         for p in qualifying_pokemon:
             types_str = "/".join(p['types'])
-            console_line = f"- {p['name']:<15} (Types: {types_str:<15} | Speed: {p['speed']}, SpA: {p['special_attack']})"
+            console_line = f"- {p['name']:<15} (Types: {types_str:<15} | Speed: {p['speed']})"
             console_output.append(console_line)
     else:
         console_output.append("No Pokémon found that match the criteria.")
@@ -97,12 +91,12 @@ async def find_and_notify_pokemon():
 
     # Telegram output
     telegram_output = []
-    telegram_output.append(f"Found {len(qualifying_pokemon)} Pokémon (any type count) with Special Attack as highest stat and Speed <= 130:")
+    telegram_output.append(f"Found {len(qualifying_pokemon)} Pokémon (any type) with Speed <= 99:")
     telegram_output.append("="*60)
     if qualifying_pokemon:
         for p in qualifying_pokemon:
             types_str = "/".join(p['types'])
-            line = f"- {p['name']:<15} (Types: {types_str:<15} | Speed: {p['speed']}, SpA: {p['special_attack']})"
+            line = f"- {p['name']:<15} (Types: {types_str:<15} | Speed: {p['speed']})"
             telegram_output.append(line)
     else:
         telegram_output.append("No Pokémon found that match the criteria.")
